@@ -5,7 +5,7 @@ import router from "@/router";
 import {bus} from "@/main";
 
 //axios.defaults.withCredentials = true;
-axios.defaults.baseURL ="http://localhost:8000"
+axios.defaults.baseURL ="https://143.198.179.90:8000"
 
 Vue.use(Vuex)
 

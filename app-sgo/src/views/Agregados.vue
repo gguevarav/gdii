@@ -257,7 +257,7 @@
     },
 
     created() {
-      axios.defaults.baseURL ="http://143.198.179.90:8081"
+      axios.defaults.baseURL ="https://143.198.179.90:8081"
       axios.defaults.headers.common['Content-Type'] = 'application/json';
       axios.defaults.headers.common['Authorization'] = 'Token 04a4e8ce9cc634845b75680a9d20d32bfdb62612';
       this.initialize()
