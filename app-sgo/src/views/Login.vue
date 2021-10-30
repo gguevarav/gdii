@@ -35,7 +35,7 @@
                                           >
                                         </v-img>
                                 <v-card-text class="mt-1">
-                                    <h1 class="text-center display-2 green--text text--darken-3">SGO</h1>
+                                    <h1 class="text-center display-2 green--text text--darken-3">GDII</h1>
                                     <v-form @submit.prevent="login">
                                         <v-text-field
                                         label="Correo"
