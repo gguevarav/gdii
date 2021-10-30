@@ -46,17 +46,10 @@
       </v-list>
       <v-divider></v-divider>
       <!-- Barra izquierda del menú -->
-      <v-list>
-        <v-list-item
-        :to="{name: 'home'}"
-        link>
-          <v-list-item-icon>
-            <v-icon>mdi-home</v-icon>
-          </v-list-item-icon>
-
-          <v-list-item-title>Home</v-list-item-title>
-        </v-list-item>
-
+      <v-list
+        nav
+        dense
+      >
         <!-- Muestra todos los menús -->
         <v-list-group
         v-for="item in items"
@@ -117,6 +110,12 @@ export default {
       if(nombreRol === 'Administrador'){
         //this.rutasMostrar = this.rutasAdministrador;
         var rutasAdmin = [
+          {
+            action: 'mdi-home',
+            active: false,
+            items: [],
+            title: 'Inicio',
+          },
           {
             action: 'mdi-counter',
             active: false,
@@ -183,7 +182,7 @@ export default {
         this.CorreoUsuario = localStorage.getItem('CorreoUsuario');
         return true;
       } else {
-        return true;
+        return false;
       }
     },
     ocultarBarra() {

@@ -111,10 +111,10 @@
                           multiple>
                             <v-select
                               :items="listadoEstados"
-                              item-text='display'
-                              item-value='id'
-                              v-model="editedItem.rir"
-                              label="Nombre RIR"
+                              item-text='name'
+                              item-value='status'
+                              v-model="editedItem.status"
+                              label="Estado"
                               :rules="[rules.required]"
                               required>
                             </v-select>
@@ -228,18 +228,35 @@
       listadoErrores: [],
       datosTabla: [],
       select: [],
-      listadoEstados: [],
+      listadoEstados: [
+        {
+          name: 'Activo',
+          status: 'active',
+        },
+        {
+          name: 'Reservado',
+          status: 'reserved',
+        },
+        {
+          name: 'Desaprobado',
+          status: 'deprecated',
+        },
+        {
+          name: 'Contenido',
+          status: 'container',
+        },
+      ],
       editedIndex: -1,
       idItemEditar: 0,
       editarPrefijo: false,
       editedItem: {
         prefix: '',
-        rir: '',
+        status: '',
         description: '',
       },
       defaultItem: {
         prefix: '',
-        rir: '',
+        status: '',
         description: '',
       },
     }),
@@ -270,13 +287,9 @@
           .then(result => {
             if (result.data.count != 0) {
               this.datosTabla = result.data.results;
-              //console.log(result.data);
-              //console.log(this.datosTabla);
             }
           })
           .catch(function (error) {
-            //console.log(error.request);
-            //console.log(error.message);
             console.log(error.response.request._response);
           })
       },
@@ -307,16 +320,17 @@
       registrarInformacion() {
         // Si el valor del índice de edición es mayor al que se está editando entonces 
         if (this.editedIndex > -1) {
+          console.log(this.editedItem);
           axios
             .put("/api/ipam/prefixes/" + this.idItemEditar, this.editedItem)
             .then(result => {
-              if(result.data.status == 200){
+              if(result.status == 200){
                 //console.log(response);
                 // Cerramos el cuadro de diálogo y mostraremos una notificación
                 this.textoSnackbar = 'Prefijo modificado exitosamente'
                 this.snackbar = !this.snackbar
                 this.cerrarDialogRegistro()
-              }else if(response.data.status == 404){
+              }else if(result.status == 404){
                 console.log("error")
                 //this.listadoErrores = response.data.errores
                 //this.alertaErrores = true
@@ -326,26 +340,30 @@
               console.log(error);
             })
         } else {
+          console.log(this.editedItem)
           axios
             .post("/api/ipam/prefixes/", this.editedItem)
             .then(result => {
-              if (result.data.status == 200) {
+              if(result.status == 201){
                 //console.log("exito")
                 // Mostramos la confirmación
                 this.textoSnackbar = 'Prefijo registrado exitosamente'
                 this.snackbar = !this.snackbar
                 this.cerrarDialogRegistro()
-              } else if (response.data.status == 404) {
+              } else if (result.status == 404) {
                 console.log("error")
                 //this.listadoErrores = response.data.errores
                 //this.alertaErrores = true
               }
             })
             .catch(function (error) {
-              console.log(error);
+              if (error.response.status == 400){
+                console.log(error.response)
+              }
             })
         }
-        this.initialize()
+        this.cerrarDialogRegistro();
+        this.initialize();
       },
 
       cerrarDialogRegistro() {

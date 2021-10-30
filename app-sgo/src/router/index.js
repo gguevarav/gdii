@@ -8,6 +8,8 @@ import Usuarios from '../views/Usuarios.vue'
 import About from '../views/About.vue'
 import Agregados from '../views/Agregados.vue'
 import Prefijos from '../views/Prefijos.vue'
+import Rangos from '../views/Rangos.vue'
+import Direcciones from '../views/Direcciones.vue'
 
 
 Vue.use(VueRouter)
@@ -84,6 +86,22 @@ const router = new VueRouter({
       path: '/Prefijos',
       name: 'Prefijos',
       component: Prefijos,
+      meta: {
+        requiresAuth: true,
+      }
+    },
+    {
+      path: '/Rangos',
+      name: 'Rangos',
+      component: Rangos,
+      meta: {
+        requiresAuth: true,
+      }
+    },
+    {
+      path: '/Direcciones IP',
+      name: 'Direcciones',
+      component: Direcciones,
       meta: {
         requiresAuth: true,
       }

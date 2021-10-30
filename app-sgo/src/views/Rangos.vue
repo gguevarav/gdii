@@ -21,13 +21,13 @@
     </v-snackbar>
     <!-- Termina snackbar de notificaciones -->
 
-    <!-- Tabla de Agregados -->
+    <!-- Tabla de Rangos de IP -->
     <v-data-table
       dense
       :headers="headers"
       :items="datosTabla"
       :items-per-page="10"
-      sort-by="Agregado"
+      sort-by="Prefijo"
       class="elevation-1">
       <template
         v-slot:top>
@@ -35,7 +35,7 @@
           flat
           color="white">
           <v-toolbar-title>
-            Agregados
+            Rangos de IP
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <!-- Dialog de botones de agregar y recargar -->
@@ -62,7 +62,7 @@
           </v-dialog>
           <!-- Termina dialog de botones de agregar y recargar -->
 
-          <!-- Dialog de registro de nuevo agregado -->
+          <!-- Dialog de registro de nuevo Rango de IP -->
           <v-dialog
             v-model="dialog"
             max-width="500px">
@@ -92,29 +92,40 @@
                       justify="center">
                       <v-col
                         cols="12"
-                        sm="6"
-                        md="6">
+                        sm="12"
+                        md="12">
                         <v-text-field
-                          v-model="editedItem.prefix"
-                          label="Agregado"
+                          v-model="editedItem.start_address"
+                          label="Dirección de inicio"
                           :rules="[rules.required]"
                           required>
                         </v-text-field>
                       </v-col>
                       <v-col
                         cols="12"
-                        sm="6"
-                        md="6">
+                        sm="12"
+                        md="12">
+                        <v-text-field
+                          v-model="editedItem.end_address"
+                          label="Dirección de fin"
+                          :rules="[rules.required]"
+                          required>
+                        </v-text-field>
+                      </v-col>
+                      <v-col
+                        cols="12"
+                        sm="12"
+                        md="12">
                         <v-btn-toggle
                           v-model="toggle_exclusive"
                           group
                           multiple>
                             <v-select
-                              :items="listadoRIRS"
-                              item-text='display'
-                              item-value='id'
-                              v-model="editedItem.rir"
-                              label="Nombre RIR"
+                              :items="listadoEstados"
+                              item-text='name'
+                              item-value='status'
+                              v-model="editedItem.status"
+                              label="Estado"
                               :rules="[rules.required]"
                               required>
                             </v-select>
@@ -128,7 +139,7 @@
                           v-model="editedItem.description"
                           label="Descripción"
                           :rules="[rules.required]"
-                          required>
+                          required> 
                         </v-text-field>
                       </v-col>
                     </v-row>
@@ -153,7 +164,7 @@
               </v-card-actions>
             </v-card>
           </v-dialog>
-          <!-- Termina dialog de registro de nuevo agregado -->
+          <!-- Termina dialog de registro de nuevo Rango de IP -->
         </v-toolbar>
       </template>
       <template
@@ -172,7 +183,7 @@
           </v-icon>
       </template>
     </v-data-table>
-    <!-- Termina la tabla de Agregados -->
+    <!-- Termina la tabla de Rangos de IP -->
   </div>
 </template>
 
@@ -194,12 +205,20 @@
           value: 'id',
         },
         {
-          text: 'Agregado',
-          value: 'display'
+          text: 'Primera dirección',
+          value: 'start_address'
         },
         {
-          text: 'RIR',
-          value: 'rir.display'
+          text: 'Última dirección',
+          value: 'end_address'
+        },
+        {
+          text: 'Tamaño',
+          value: 'size'
+        },
+        {
+          text: 'Estado',
+          value: 'status.label'
         },
         {
           text: 'Descripción',
@@ -228,25 +247,44 @@
       listadoErrores: [],
       datosTabla: [],
       select: [],
-      listadoRIRS: [],
+      listadoEstados: [
+        {
+          name: 'Activo',
+          status: 'active',
+        },
+        {
+          name: 'Reservado',
+          status: 'reserved',
+        },
+        {
+          name: 'Desaprobado',
+          status: 'deprecated',
+        },
+        {
+          name: 'Contenido',
+          status: 'container',
+        },
+      ],
       editedIndex: -1,
       idItemEditar: 0,
-      editarCodigo: false,
+      editarPrefijo: false,
       editedItem: {
-        prefix: '',
-        rir: '',
+        start_address: '',
+        end_address: '',
+        status: '',
         description: '',
       },
       defaultItem: {
-        prefix: '',
-        rir: '',
+        start_address: '',
+        end_address: '',
+        status: '',
         description: '',
       },
     }),
 
     computed: {
       formTitle() {
-        return this.editedIndex === -1 ? 'Nuevo agregado' : 'Editar agregado'
+        return this.editedIndex === -1 ? 'Nuevo rango de IP' : 'Editar rango de ip'
       },
     },
 
@@ -266,20 +304,10 @@
     methods: {
       initialize() {
         axios
-          .get("/api/ipam/aggregates/")
+          .get("/api/ipam/ip-ranges/")
           .then(result => {
             if (result.data.count != 0) {
               this.datosTabla = result.data.results;
-            }
-          })
-          .catch(function (error) {
-            console.log(error.response.request._response);
-          }),
-          axios
-          .get("/api/ipam/rirs/")
-          .then(result => {
-            if (result.data.count != 0) {
-              this.listadoRIRS = result.data.results;
             }
           })
           .catch(function (error) {
@@ -292,17 +320,17 @@
         this.editedIndex = this.datosTabla.indexOf(item)
         this.editedItem = Object.assign({}, item)
         if (this.editedIndex > -1) {
-          this.editarCodigo = true
+          this.editarPrefijo = true
         } else {
-          this.editarCodigo = false
+          this.editarPrefijo = false
         }
         this.dialog = true
       },
 
       eliminarProducto(id) {
-        confirm('¿Está seguro que desea eliminar este agregado?') && axios
-          .delete("/api/ipam/aggregates/" + id)
-          .then(function (restult) {
+        confirm('¿Está seguro que desea eliminar este rango?') && axios
+          .delete("/api/ipam/ip-ranges/" + id)
+          .then(function (result) {
             //console.log(response);
           })
           .catch(function (error) {
@@ -315,12 +343,12 @@
         if (this.editedIndex > -1) {
           console.log(this.editedItem);
           axios
-            .put("/api/ipam/aggregates/" + this.idItemEditar, this.editedItem)
+            .put("/api/ipam/ip-ranges/" + this.idItemEditar, this.editedItem)
             .then(result => {
               if(result.status == 200){
                 //console.log(response);
                 // Cerramos el cuadro de diálogo y mostraremos una notificación
-                this.textoSnackbar = 'Agregado modificado exitosamente'
+                this.textoSnackbar = 'Rango modificado exitosamente'
                 this.snackbar = !this.snackbar
                 this.cerrarDialogRegistro()
               }else if(result.status == 404){
@@ -330,20 +358,20 @@
               }
             })
             .catch(function (error) {
-              console.log(error.response);
+              console.log(error);
             })
         } else {
           console.log(this.editedItem)
           axios
-            .post("/api/ipam/aggregates/", this.editedItem)
+            .post("/api/ipam/ip-ranges/", this.editedItem)
             .then(result => {
-              if (result.status == 201) {
+              if(result.status == 201){
                 //console.log("exito")
                 // Mostramos la confirmación
-                this.textoSnackbar = 'Agregado registrado exitosamente'
+                this.textoSnackbar = 'Rango registrado exitosamente'
                 this.snackbar = !this.snackbar
                 this.cerrarDialogRegistro()
-              } else if (result.status == 400) {
+              } else if (result.status == 404) {
                 console.log("error")
                 //this.listadoErrores = response.data.errores
                 //this.alertaErrores = true
@@ -355,13 +383,13 @@
               }
             })
         }
-        this.cerrarDialogRegistro()
-        this.initialize()
+        this.cerrarDialogRegistro();
+        this.initialize();
       },
 
       cerrarDialogRegistro() {
         this.alertaErrores = false
-        this.editarCodigo = false
+        this.editarPrefijo = false
         this.dialog = false
         this.$nextTick(() => {
           this.editedItem = Object.assign({}, this.defaultItem)
